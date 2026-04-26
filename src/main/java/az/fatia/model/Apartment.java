@@ -12,6 +12,10 @@ public class Apartment {
     private Status status;
     private String clientName = null;
 
+    public Apartment() {
+
+    }
+
     public Apartment(int id, BigDecimal price) {
         this.id = id;
         this.price = price;
