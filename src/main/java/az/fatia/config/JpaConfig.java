@@ -4,18 +4,17 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-public class DatabaseConfig {
-
-    private static final EntityManagerFactory entityManagerFactory =
+public class JpaConfig {
+    private static final EntityManagerFactory emf =
             Persistence.createEntityManagerFactory("apartmentPU");
 
     public static EntityManager getEntityManager() {
-        return entityManagerFactory.createEntityManager();
+        return emf.createEntityManager();
     }
 
     public static void close() {
-        if (entityManagerFactory.isOpen()) {
-            entityManagerFactory.close();
+        if (emf.isOpen()) {
+            emf.close();
         }
     }
 }

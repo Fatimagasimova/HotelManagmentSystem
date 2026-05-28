@@ -2,7 +2,7 @@ package az.fatia.servlet;
 
 import az.fatia.enums.Status;
 import az.fatia.model.Apartment;
-import az.fatia.repository.JdbcApartmentRepository;
+import az.fatia.repository.JpaApartmentRepository;
 import az.fatia.service.ApartmentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,12 +19,12 @@ import java.util.List;
 public class ApartmentServlet extends HttpServlet {
 
     private ApartmentService apartmentService;
-    private JdbcApartmentRepository repository;
+    private JpaApartmentRepository repository;
     private ObjectMapper objectMapper;
 
     @Override
     public void init() throws ServletException {
-        this.repository = new JdbcApartmentRepository();
+        this.repository = new JpaApartmentRepository();
         this.apartmentService = new ApartmentService(repository);
         this.objectMapper = new ObjectMapper();
     }
