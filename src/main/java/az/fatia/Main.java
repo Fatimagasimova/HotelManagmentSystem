@@ -2,7 +2,6 @@ package az.fatia;
 
 import az.fatia.command.CommandHandler;
 import az.fatia.command.CommandParser;
-import az.fatia.repository.ApartmentRepository;
 import az.fatia.repository.InMemoryApartmentRepository;
 import az.fatia.service.ApartmentService;
 
@@ -10,7 +9,10 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        ApartmentRepository repository = new InMemoryApartmentRepository();
+        InMemoryApartmentRepository repository = new InMemoryApartmentRepository();
+
+        repository.loadFromFile();
+
         ApartmentService service = new ApartmentService(repository);
         CommandHandler handler = new CommandHandler(service);
         CommandParser parser = new CommandParser();
@@ -24,6 +26,7 @@ public class Main {
         System.out.println("  list                          - List all apartments");
         System.out.println("  exit");
         System.out.println("================================");
+
         while (true) {
             System.out.print("Please enter your command: ");
             String input = scanner.nextLine();
