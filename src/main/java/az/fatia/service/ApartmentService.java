@@ -1,22 +1,20 @@
 package az.fatia.service;
 
-import az.fatia.config.ConfigManager;
 import az.fatia.enums.Status;
 import az.fatia.model.Apartment;
 import az.fatia.repository.ApartmentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
 
-    public ApartmentService(ApartmentRepository apartmentRepository) {
-        this.apartmentRepository = apartmentRepository;
-    }
 
     @Transactional
     public void save(Apartment apartment) {
@@ -24,7 +22,9 @@ public class ApartmentService {
     }
 
     public Apartment findById(int id) {
-        return apartmentRepository.findById(id);
+        Apartment apartment = apartmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Apartment with ID " + id + " not found"));
+        return apartment;
     }
 
     public List<Apartment> findAll() {
@@ -33,11 +33,7 @@ public class ApartmentService {
 
     @Transactional
     public void reserve(int id, String clientName) {
-        if (!ConfigManager.isHotelChangeStatusEnabled()) {
-            throw new IllegalStateException("Changing apartment status is disabled in configuration!");
-        }
-
-        Apartment found = apartmentRepository.findById(id);
+        Apartment found = findById(id);
         if (found == null) {
             throw new IllegalArgumentException("Apartment with ID " + id + " not found");
         }
@@ -54,11 +50,7 @@ public class ApartmentService {
 
     @Transactional
     public void release(int id) {
-        if (!ConfigManager.isHotelChangeStatusEnabled()) {
-            throw new IllegalStateException("Changing apartment status is disabled in configuration!");
-        }
-
-        Apartment found = apartmentRepository.findById(id);
+        Apartment found = findById(id);
         if (found == null) {
             throw new IllegalArgumentException("Apartment with ID " + id + " not found");
         }
