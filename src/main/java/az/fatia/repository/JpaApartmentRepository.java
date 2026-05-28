@@ -1,49 +1,31 @@
 package az.fatia.repository;
 
-import az.fatia.config.JpaConfig;
 import az.fatia.model.Apartment;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+@Repository
 public class JpaApartmentRepository implements ApartmentRepository {
 
+    @PersistenceContext
+    private EntityManager em; // Managed automatically by Spring Data JPA
+
     @Override
+    @Transactional // Spring automatically handles EntityTransaction begin/commit/rollback
     public void save(Apartment apartment) {
-        EntityManager em = JpaConfig.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            em.merge(apartment);
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            e.printStackTrace();
-            throw new RuntimeException("JPA Error during saving apartment", e);
-        } finally {
-            em.close();
-        }
+        em.merge(apartment);
     }
 
     @Override
     public Apartment findById(int id) {
-        EntityManager em = JpaConfig.getEntityManager();
-        try {
-            return em.find(Apartment.class, id);
-        } finally {
-            em.close();
-        }
+        return em.find(Apartment.class, id);
     }
 
     @Override
     public List<Apartment> findAll() {
-        EntityManager em = JpaConfig.getEntityManager();
-        try {
-            return em.createQuery("SELECT a FROM Apartment a", Apartment.class).getResultList();
-        } finally {
-            em.close();
-        }
+        return em.createQuery("SELECT a FROM Apartment a", Apartment.class).getResultList();
     }
 }

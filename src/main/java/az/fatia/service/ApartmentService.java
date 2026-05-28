@@ -4,16 +4,21 @@ import az.fatia.config.ConfigManager;
 import az.fatia.enums.Status;
 import az.fatia.model.Apartment;
 import az.fatia.repository.ApartmentRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Service
 public class ApartmentService {
-    private ApartmentRepository apartmentRepository;
+
+    private final ApartmentRepository apartmentRepository;
 
     public ApartmentService(ApartmentRepository apartmentRepository) {
         this.apartmentRepository = apartmentRepository;
     }
 
+    @Transactional
     public void save(Apartment apartment) {
         apartmentRepository.save(apartment);
     }
@@ -26,20 +31,19 @@ public class ApartmentService {
         return apartmentRepository.findAll();
     }
 
+    @Transactional
     public void reserve(int id, String clientName) {
         if (!ConfigManager.isHotelChangeStatusEnabled()) {
-            System.out.println("ERROR: Changing apartment status is disabled in config!");
-            return;
+            throw new IllegalStateException("Changing apartment status is disabled in configuration!");
         }
 
         Apartment found = apartmentRepository.findById(id);
         if (found == null) {
-            System.out.println("Apartment not found");
-            return;
+            throw new IllegalArgumentException("Apartment with ID " + id + " not found");
         }
+
         if (found.getStatus() != Status.AVAILABLE) {
-            System.out.println("Apartment is already reserved");
-            return;
+            throw new IllegalStateException("Apartment is already reserved or unavailable");
         }
 
         found.setStatus(Status.RESERVED);
@@ -48,20 +52,19 @@ public class ApartmentService {
         apartmentRepository.save(found);
     }
 
+    @Transactional
     public void release(int id) {
         if (!ConfigManager.isHotelChangeStatusEnabled()) {
-            System.out.println("ERROR: Changing apartment status is disabled in config!");
-            return;
+            throw new IllegalStateException("Changing apartment status is disabled in configuration!");
         }
 
         Apartment found = apartmentRepository.findById(id);
         if (found == null) {
-            System.out.println("Apartment not found");
-            return;
+            throw new IllegalArgumentException("Apartment with ID " + id + " not found");
         }
+
         if (found.getStatus() != Status.RESERVED) {
-            System.out.println("Apartment is already free");
-            return;
+            throw new IllegalStateException("Apartment is already free and available");
         }
 
         found.setClientName(null);
