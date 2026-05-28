@@ -3,9 +3,12 @@ package az.fatia.model;
 
 import az.fatia.enums.Status;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class Apartment {
+public class Apartment implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Integer id;
     private BigDecimal price;
