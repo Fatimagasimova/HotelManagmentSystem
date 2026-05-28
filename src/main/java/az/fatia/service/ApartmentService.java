@@ -1,6 +1,6 @@
 package az.fatia.service;
 
-
+import az.fatia.config.ConfigManager;
 import az.fatia.enums.Status;
 import az.fatia.model.Apartment;
 import az.fatia.repository.ApartmentRepository;
@@ -12,7 +12,6 @@ public class ApartmentService {
 
     public ApartmentService(ApartmentRepository apartmentRepository) {
         this.apartmentRepository = apartmentRepository;
-
     }
 
     public void save(Apartment apartment) {
@@ -28,6 +27,11 @@ public class ApartmentService {
     }
 
     public void reserve(int id, String clientName) {
+        if (!ConfigManager.isHotelChangeStatusEnabled()) {
+            System.out.println("ERROR: Changing apartment status is disabled in config!");
+            return;
+        }
+
         Apartment found = apartmentRepository.findById(id);
         if (found == null) {
             System.out.println("Apartment not found");
@@ -37,11 +41,19 @@ public class ApartmentService {
             System.out.println("Apartment is already reserved");
             return;
         }
+
         found.setStatus(Status.RESERVED);
         found.setClientName(clientName);
+
+        apartmentRepository.save(found);
     }
 
     public void release(int id) {
+        if (!ConfigManager.isHotelChangeStatusEnabled()) {
+            System.out.println("ERROR: Changing apartment status is disabled in config!");
+            return;
+        }
+
         Apartment found = apartmentRepository.findById(id);
         if (found == null) {
             System.out.println("Apartment not found");
@@ -51,7 +63,10 @@ public class ApartmentService {
             System.out.println("Apartment is already free");
             return;
         }
+
         found.setClientName(null);
         found.setStatus(Status.AVAILABLE);
+
+        apartmentRepository.save(found);
     }
 }
