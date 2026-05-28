@@ -2,7 +2,7 @@ package az.fatia.servlet;
 
 import az.fatia.enums.Status;
 import az.fatia.model.Apartment;
-import az.fatia.repository.InMemoryApartmentRepository;
+import az.fatia.repository.JdbcApartmentRepository;
 import az.fatia.service.ApartmentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,13 +19,12 @@ import java.util.List;
 public class ApartmentServlet extends HttpServlet {
 
     private ApartmentService apartmentService;
-    private InMemoryApartmentRepository repository;
+    private JdbcApartmentRepository repository;
     private ObjectMapper objectMapper;
 
     @Override
     public void init() throws ServletException {
-        this.repository = new InMemoryApartmentRepository();
-        this.repository.loadFromFile();
+        this.repository = new JdbcApartmentRepository();
         this.apartmentService = new ApartmentService(repository);
         this.objectMapper = new ObjectMapper();
     }
@@ -35,10 +34,14 @@ public class ApartmentServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        List<Apartment> apartments = repository.findAll();
-
-        String jsonResult = objectMapper.writeValueAsString(apartments);
-        resp.getWriter().write(jsonResult);
+        try {
+            List<Apartment> apartments = repository.findAll();
+            String jsonResult = objectMapper.writeValueAsString(apartments);
+            resp.getWriter().write(jsonResult);
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }
     }
 
     @Override
@@ -57,8 +60,13 @@ public class ApartmentServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_CREATED); // 201 Created
             resp.getWriter().write("{\"message\": \"Apartment registered successfully\"}");
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
-            resp.getWriter().write("{\"error\": \"Invalid input data\"}");
+            System.err.println("=== Error Occurred in POST Request ===");
+            e.printStackTrace();
+
+            // Bubble up the real database error directly to Postman for visibility
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            String msg = e.getMessage() != null ? e.getMessage() : "Unknown error";
+            resp.getWriter().write("{\"error\": \"Data could not be written to the database!\", \"details\": \"" + msg.replace("\"", "'") + "\"}");
         }
     }
 
@@ -105,6 +113,8 @@ public class ApartmentServlet extends HttpServlet {
 
                 apartmentService.reserve(apartmentId, clientName);
 
+                apartment = repository.findById(apartmentId);
+
                 if (apartment.getStatus() == Status.RESERVED) {
                     resp.getWriter().write("{\"message\": \"Apartment reserved successfully\"}");
                 } else {
@@ -114,6 +124,7 @@ public class ApartmentServlet extends HttpServlet {
 
             } else if ("release".equals(action)) {
                 apartmentService.release(apartmentId);
+                apartment = repository.findById(apartmentId);
 
                 if (apartment.getStatus() == Status.AVAILABLE) {
                     resp.getWriter().write("{\"message\": \"Apartment released successfully\"}");
@@ -130,6 +141,8 @@ public class ApartmentServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"error\": \"ID must be an integer\"}");
         } catch (Exception e) {
+            System.err.println("=== Error Occurred in PUT Request ===");
+            e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\": \"An error occurred: " + e.getMessage() + "\"}");
         }
