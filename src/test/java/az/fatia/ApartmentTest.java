@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -41,7 +42,7 @@ public class ApartmentTest {
 
     @Test
     void testReserveApartmentSuccess() {
-        when(apartmentRepository.findById(101)).thenReturn(apartment);
+        when(apartmentRepository.findById(101)).thenReturn(Optional.ofNullable(apartment));
 
         apartmentService.reserve(101, "Mary");
 
@@ -53,7 +54,7 @@ public class ApartmentTest {
     void testReleaseApartmentSuccess() {
         apartment.setStatus(Status.RESERVED);
         apartment.setClientName("Mary");
-        when(apartmentRepository.findById(101)).thenReturn(apartment);
+        when(apartmentRepository.findById(101)).thenReturn(Optional.ofNullable(apartment));
 
         apartmentService.release(101);
 
@@ -64,7 +65,7 @@ public class ApartmentTest {
     @Test
     void testReserveAlreadyReservedApartment() {
         apartment.setStatus(Status.RESERVED);
-        when(apartmentRepository.findById(101)).thenReturn(apartment);
+        when(apartmentRepository.findById(101)).thenReturn(Optional.ofNullable(apartment));
 
         apartmentService.reserve(101, "Jane");
 

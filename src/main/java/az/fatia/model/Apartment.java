@@ -3,12 +3,14 @@ package az.fatia.model;
 import az.fatia.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "apartments")
 @Data
+@RequiredArgsConstructor
 public class Apartment {
 
     @Id
@@ -26,6 +28,8 @@ public class Apartment {
     @Column(name = "client_name", length = 100)
     private String clientName = null;
 
+    public Apartment(int id, BigDecimal price) {
+    }
 
     @Override
     public String toString() {

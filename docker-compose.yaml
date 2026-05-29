@@ -12,6 +12,28 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - db-network
+
+  apartment-app:
+    image: fatiagasimova/apartmentsimage:v1
+    platform: linux/amd64
+    container_name: apartment-app
+
+    ports:
+      - "8080:8080"
+    depends_on:
+      - apartment-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://apartment-db:5432/apartments
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 2005
+    networks:
+      - db-network
+
+networks:
+  db-network:
+    driver: bridge
 
 volumes:
   pgdata:
